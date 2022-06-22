@@ -30,19 +30,19 @@ var _ proto.RuleSetServer = &GRPCServer{}
 // ServeOpts is an option for serving a plugin.
 // Each plugin can pass a RuleSet that represents its own functionality.
 type ServeOpts struct {
-	RuleSet tflint.RuleSet
+	RuleSet tflint.RuleSet //the plugin is identified by the RuleSet
 }
 
 // Serve is a wrapper of plugin.Serve. This is entrypoint of all plugins.
 func Serve(opts *ServeOpts) {
-	plugin.Serve(&plugin.ServeConfig{
+	plugin.Serve(&plugin.ServeConfig{ //entry point of the plugin 
 		HandshakeConfig: handshakeConfig,
 		Plugins: map[string]plugin.Plugin{
-			"ruleset": &RuleSetPlugin{impl: opts.RuleSet},
+			"ruleset": &RuleSetPlugin{impl: opts.RuleSet}, //you define the rules here that you want served
 		},
 		GRPCServer: func(opts []grpc.ServerOption) *grpc.Server {
 			opts = append(opts, grpc.UnaryInterceptor(interceptor.RequestLogging("host2plugin")))
-			return grpc.NewServer(opts...)
+			return grpc.NewServer(opts...) //the server is returned here. 
 		},
 		Logger: logger.Logger(),
 	})
@@ -106,7 +106,7 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	}
 	defer conn.Close()
 
-	err = s.impl.Check(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)})
+	err = s.impl.Check(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)}) //the check for the server passes in the runner client
 
 	if err != nil {
 		return nil, toproto.Error(codes.Aborted, err)
