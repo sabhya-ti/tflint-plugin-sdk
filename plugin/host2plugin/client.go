@@ -101,12 +101,12 @@ func (c *GRPCClient) Check(runner plugin2host.Server) error {
 	logger.Debug("starting host-side gRPC server")
 	go c.broker.AcceptAndServe(brokerID, func(opts []grpc.ServerOption) *grpc.Server {
 		opts = append(opts, grpc.UnaryInterceptor(interceptor.RequestLogging("plugin2host")))
-		server := grpc.NewServer(opts...)
+		server := grpc.NewServer(opts...) //check function is initialising a new server. This is for the reverse (plugiin to host communication)
 		proto.RegisterRunnerServer(server, &plugin2host.GRPCServer{Impl: runner})
-		return server
+		return server //the server is being returned here
 	})
 
-	_, err := c.client.Check(context.Background(), &proto.Check_Request{Runner: brokerID})
+	_, err := c.client.Check(context.Background(), &proto.Check_Request{Runner: brokerID}) 
 
 	if err != nil {
 		return fromproto.Error(err)

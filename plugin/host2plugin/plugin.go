@@ -31,7 +31,7 @@ func (p *RuleSetPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) er
 		impl:   p.impl,
 		broker: broker,
 	})
-	return nil
+	return nil //the plugin is actually a gRPC server
 }
 
 // GRPCClient returns an RPC client for the host.

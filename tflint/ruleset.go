@@ -14,7 +14,7 @@ var _ RuleSet = &BuiltinRuleSet{}
 type BuiltinRuleSet struct {
 	Name    string
 	Version string
-	Rules   []Rule
+	Rules   []Rule //the rules written by the developer go here
 
 	EnabledRules []Rule
 }
@@ -94,7 +94,7 @@ func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
 		}
 
 		if enabled {
-			r.EnabledRules = append(r.EnabledRules, rule)
+			r.EnabledRules = append(r.EnabledRules, rule) //configurations determine which rules are enabled or not. the enabled rules get added here
 		}
 	}
 }
@@ -103,7 +103,7 @@ func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
 func (r *BuiltinRuleSet) Check(runner Runner) error {
 	for _, rule := range r.EnabledRules {
 		if err := rule.Check(runner); err != nil {
-			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
+			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err) //the check function is called for each enabled rule one by one.
 		}
 	}
 	return nil

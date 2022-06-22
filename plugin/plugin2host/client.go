@@ -20,12 +20,12 @@ import (
 	"github.com/zclconf/go-cty/cty/msgpack"
 )
 
-// GRPCClient is a plugin-side implementation. Plugin can send requests through the client to host's gRPC server.
+// GRPCClient is a plugin-side implementation. Plugin can send requests through the client to host's gRPC server. The check function in the plugin initialises this
 type GRPCClient struct {
-	Client proto.RunnerClient
+	Client proto.RunnerClient //look into this to understand the runner
 }
 
-var _ tflint.Runner = &GRPCClient{}
+var _ tflint.Runner = &GRPCClient{} //The runner is actually a GPRC Client
 
 // GetResourceContent gets the contents of resources based on the schema.
 // This is shorthand of GetModuleContent for resources
@@ -37,7 +37,7 @@ func (c *GRPCClient) GetResourceContent(name string, inner *hclext.BodySchema, o
 
 	body, err := c.GetModuleContent(&hclext.BodySchema{
 		Blocks: []hclext.BlockSchema{
-			{Type: "resource", LabelNames: []string{"type", "name"}, Body: inner},
+			{Type: "resource", LabelNames: []string{"type", "name"}, Body: inner}, //internally, get resource content is calling get module content only. The name here refers to the terraform referance name
 		},
 	}, opts)
 	if err != nil {
@@ -46,11 +46,11 @@ func (c *GRPCClient) GetResourceContent(name string, inner *hclext.BodySchema, o
 
 	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
 	for _, resource := range body.Blocks {
-		if resource.Labels[0] != name {
+		if resource.Labels[0] != name { //the name here is the type of resource that we need. Eg: If aws_instance is passed, only information for EC2 instances will be made available
 			continue
 		}
 
-		content.Blocks = append(content.Blocks, resource)
+		content.Blocks = append(content.Blocks, resource) //all of the content is being collated here and then is finally returned. 
 	}
 
 	return content, nil
@@ -62,7 +62,7 @@ func (c *GRPCClient) GetModuleContent(schema *hclext.BodySchema, opts *tflint.Ge
 		opts = &tflint.GetModuleContentOption{}
 	}
 
-	req := &proto.GetModuleContent_Request{
+	req := &proto.GetModuleContent_Request{ //get module content is making a request. TODO: Need to look further into the request
 		Schema: toproto.BodySchema(schema),
 		Option: toproto.GetModuleContentOption(opts),
 	}
